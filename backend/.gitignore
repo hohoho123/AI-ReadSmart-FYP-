@@ -1,0 +1,94 @@
+#Environment Variables (MOST IMPORTANT!)
+.env
+.env.local
+.env.*.local
+*.env
+
+#Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+#Python Cache Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+#Distribution / Packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+#PyInstaller
+*.manifest
+*.spec
+
+#Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+#Jupyter Notebook
+.ipynb_checkpoints
+
+#pyenv
+.python-version
+
+#IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+#Logs
+*.log
+logs/
+
+#Database files (if using local DB)
+*.db
+*.sqlite
+*.sqlite3
+
+#Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+#OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+#Firebase credentials (we'll add these later)
+firebase-credentials.json
+serviceAccountKey.json
+*-firebase-adminsdk-*.json

@@ -53,3 +53,6 @@ google-cloud-voices-credentials.json
 *secret*
 *credentials*
 *key*.json
+
+#testing file
+test_api.py

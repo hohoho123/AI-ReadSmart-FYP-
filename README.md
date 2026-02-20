@@ -12,6 +12,7 @@ source venv/bin/activate
 
 ### Run the Server (FastAPI)
 uvicorn application.main:app --reload 
+uvicorn application.main:app --reload --host 0.0.0.0 --port 8000
 - **Interactive API Docs**: http://127.0.0.1:8000/docs
 ## Notice `--host 0.0.0.0` - this makes backend accessible from your phone!
 uvicorn application.main:app --host 0.0.0.0 --port 8000 --reload

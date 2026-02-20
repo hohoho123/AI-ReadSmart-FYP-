@@ -3,6 +3,8 @@
 .env.local
 .env.*.local
 *.env
+venv/
+env/
 
 #Backend
 backend/venv/
@@ -39,9 +41,13 @@ Thumbs.db
 *.log
 logs/
 
-#Firebase credentials
-*firebase*.json
+#Firebase credentials (we'll add these later)
+firebase-credentials.json
 serviceAccountKey.json
+*-firebase-adminsdk-*.json
+
+# Google Cloud credentials
+google-cloud-voices-credentials.json
 
 #API Keys or sensitive configs
 *secret*

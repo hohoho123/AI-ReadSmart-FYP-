@@ -92,3 +92,6 @@ Thumbs.db
 firebase-credentials.json
 serviceAccountKey.json
 *-firebase-adminsdk-*.json
+
+# Google Cloud credentials
+google-cloud-voices-credentials.json

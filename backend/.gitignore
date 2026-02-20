@@ -95,3 +95,6 @@ serviceAccountKey.json
 
 # Google Cloud credentials
 google-cloud-voices-credentials.json
+
+#python file
+test_api.py

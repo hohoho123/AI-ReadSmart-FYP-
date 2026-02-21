@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
-import { getFirebaseAuth } from './authservice';
+import { getAuth } from 'firebase/auth'; // Import directly from Firebase to break the loop
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,7 +12,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const auth = getFirebaseAuth();
+      const auth = getAuth(); // Call Firebase directly
       const user = auth.currentUser;
       
       if (user) {

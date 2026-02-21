@@ -16,48 +16,56 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 # Signup endpoint
 @router.post("/signup")
 async def signup(user_data: UserCreate):
-    """
-    Create a new user account
-    """
     try:
-        # Check if user already exists in our database
+        # 1. Check if user already exists
         existing_user = get_user_by_email(user_data.email)
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Create user in Firebase
+        # 2. Create user in Firebase (Firebase requires 'display_name')
         firebase_user = create_firebase_user(
             email=user_data.email,
             password=user_data.password,
-            display_name=user_data.display_name
+            display_name=user_data.display_name 
         )
         
         if not firebase_user:
             raise HTTPException(status_code=500, detail="Failed to create user in Firebase")
         
-        # Create user in our MongoDB database
+        # 3. Create user in MongoDB
         user_id = str(uuid.uuid4())
         new_user = {
             "user_id": user_id,
             "email": user_data.email,
             "display_name": user_data.display_name,
+            "full_name": user_data.full_name,
+            "phone": user_data.phone,
             "firebase_uid": firebase_user.uid,
             "created_at": datetime.now(),
-            "profile_completed": False
+            "profile_completed": True 
         }
-        
         create_user(new_user)
         
-        # Return user data
+        # 4. Immediately create their preferences in MongoDB
+        new_prefs = {
+            "user_id": user_id,
+            "followed_topics": user_data.followed_topics,
+            "tts_voice": "voice_a",
+            "playback_speed": "1.0x",
+            "tts_enabled": True,
+            "stt_enabled": True,
+            "updated_at": datetime.now()
+        }
+        preferences_collection.insert_one(new_prefs)
+        
         return {
             "status": "success",
-            "message": "Account created successfully",
+            "message": "Account and profile created successfully",
             "user": {
                 "user_id": user_id,
                 "email": user_data.email,
                 "display_name": user_data.display_name,
-                "firebase_uid": firebase_user.uid,
-                "profile_completed": False
+                "profile_completed": True
             }
         }
         

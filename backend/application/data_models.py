@@ -11,6 +11,10 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     display_name: str = Field(min_length=2, max_length=50)
+    # New fields collected from the FillProfile screen
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    followed_topics: List[str] = []
 
 class UserLogin(BaseModel):
     """For user login"""

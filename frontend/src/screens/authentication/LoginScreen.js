@@ -24,13 +24,11 @@ export default function LoginScreen({ navigation }) {
       const response = await authService.login(email, password);
       
       if (response.success) {
-        if (!response.profileCompleted) {
-          // If they haven't finished the mandatory setup, force them to do it
-          navigation.replace('SetupTopics');
-        } else {
-          // Global state will handle swapping AuthNavigator to MainTabNavigator
-          console.log('Login successful, ready for Main App');
-        }
+        console.log('Login successful:', response.user);
+        
+        // Since we use Unified Signup, all logged-in users have full profiles.
+        // Route directly to Home!
+        navigation.replace('Home');
       }
     } catch (err) {
       setError(err.message || 'Failed to sign in. Please check your credentials.');

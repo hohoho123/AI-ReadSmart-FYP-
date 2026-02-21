@@ -57,13 +57,18 @@ export function getFirebaseAuth() {
 // ===========================================
 export const authService = {
   // Signup
-  async signup(email, password, displayName) {
+  async signup(email, password, displayName, fullName, phone, topics) {
+    // Call our newly updated backend route
     const response = await api.post('/auth/signup', {
-      email,
-      password,
+      email: email,
+      password: password,
       display_name: displayName,
+      full_name: fullName,
+      phone: phone,
+      followed_topics: topics || []
     });
     
+    // Log them into Firebase on the frontend
     await signInWithEmailAndPassword(auth, email, password);
     await storage.saveUser(response.data.user);
     
@@ -72,8 +77,19 @@ export const authService = {
 
   // Login
   async login(email, password) {
-    await signInWithEmailAndPassword(auth, email, password);
-    const response = await api.get('/auth/verify');
+    // 1. Log into Firebase and capture the credential instantly
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // 2. Extract the token immediately to prevent race conditions
+    const token = await userCredential.user.getIdToken(true);
+
+    // 3. Explicitly pass the token to your backend in the header
+    const response = await api.get('/auth/verify', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
     await storage.saveUser(response.data.user);
     
     return { 

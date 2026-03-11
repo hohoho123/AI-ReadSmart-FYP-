@@ -37,7 +37,9 @@ export default function FillProfileScreen({ navigation, route }) {
         username, 
         fullName, 
         phone, 
-        signupData.topics 
+        signupData.topics,
+        signupData.ttsVoice,
+        signupData.playbackSpeed 
       );
       
       if (response.success) {
@@ -67,9 +69,7 @@ export default function FillProfileScreen({ navigation, route }) {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatarCircle}>
-              <View style={styles.cameraIconContainer}>
-                <Ionicons name="camera" size={16} color="#FFFFFF" />
-              </View>
+              <Ionicons name="person" size={48} color="#9CA3AF" />
             </View>
           </View>
 
@@ -115,8 +115,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#000000' },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
   avatarContainer: { alignItems: 'center', marginVertical: 30 },
-  avatarCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  cameraIconContainer: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#3B82F6', width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: '#FFFFFF' },
+  avatarCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
   form: { width: '100%' },
   label: { fontSize: 14, color: '#374151', marginBottom: 8, fontWeight: '500' },
   asterisk: { color: '#FF3B30' },

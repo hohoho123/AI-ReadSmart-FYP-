@@ -42,4 +42,14 @@ export const newsService = {
     const response = await api.delete(`/news/saved/${articleId}`);
     return { success: true };
   },
+
+  // Scrape full article text from publisher URL
+  async scrapeArticle(url) {
+    const response = await api.get('/news/scrape', { params: { url } });
+    return {
+      fullText: response.data.full_text || '',
+      status: response.data.status,
+      message: response.data.message || '',
+    };
+  },
 };

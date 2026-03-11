@@ -1,5 +1,9 @@
 import requests
 import os
+import httpx
+import random
+import os
+from typing import List, Optional
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
@@ -8,47 +12,83 @@ load_dotenv()
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 NEWS_API_BASE_URL = "https://newsapi.org/v2"
 
-def fetch_top_headlines(category=None, country="us", page=1, page_size=20):
+# By setting page_size=1, Page 1 gets the 1st article, Page 2 gets the 2nd, completely preventing duplicates!
+async def get_news_by_topics(topics: list, page: int = 1) -> list:
+    articles = []
+    async with httpx.AsyncClient() as client:
+        for topic in topics:
+            url = f"{NEWS_API_BASE_URL}/top-headlines?category={topic.lower()}&language=en&page={page}&pageSize=1&apiKey={NEWS_API_KEY}"
+            try:
+                response = await client.get(url)
+                data = response.json()
+                if data.get("status") == "ok" and data.get("articles"):
+                    articles.extend(data["articles"])
+            except Exception as e:
+                print(f"Error fetching {topic}: {e}")
+    return articles
+
+# I am adding this dedicated function for the Recommendations infinite scroll (5 at a time)
+async def get_paginated_news(topic: Optional[str] = None, page: int = 1, page_size: int = 5):
+    async with httpx.AsyncClient() as client:
+        url = f"{NEWS_API_BASE_URL}/top-headlines?language=en&page={page}&pageSize={page_size}&apiKey={NEWS_API_KEY}"
+        if topic and topic.lower() != 'all':
+            url += f"&category={topic.lower()}"
+            
+        try:
+            response = await client.get(url)
+            data = response.json()
+            if data.get("status") == "ok" and data.get("articles"):
+                return data["articles"]
+            return []
+        except Exception as e:
+            print(f"Error fetching paginated news: {e}")
+            return []
+
+# Topics that map directly to NewsAPI /top-headlines categories
+NEWSAPI_CATEGORIES = {"business", "entertainment", "general", "health", "science", "sports", "technology"}
+
+def search_news_for_topic(topic: str, page: int = 1, page_size: int = 5):
     """
-    Get top headlines from NewsAPI
-    
-    Categories: business, entertainment, general, health, science, sports, technology
+    Fetch articles for a specific topic accurately:
+    - NewsAPI native categories use /top-headlines?category= (most accurate)
+    - All other topics use /everything?qInTitle= (title-only match prevents off-topic results)
     """
     try:
-        url = f"{NEWS_API_BASE_URL}/top-headlines"
-        
-        params = {
-            "apiKey": NEWS_API_KEY,
-            "country": country,
-            "page": page,
-            "pageSize": page_size
-        }
-        
-        if category:
-            params["category"] = category
-        
+        if topic.lower() in NEWSAPI_CATEGORIES:
+            url = f"{NEWS_API_BASE_URL}/top-headlines"
+            params = {
+                "apiKey": NEWS_API_KEY,
+                "category": topic.lower(),
+                "language": "en",
+                "page": page,
+                "pageSize": page_size,
+            }
+        else:
+            url = f"{NEWS_API_BASE_URL}/everything"
+            from_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+            params = {
+                "apiKey": NEWS_API_KEY,
+                "qInTitle": topic,
+                "from": from_date,
+                "sortBy": "publishedAt",
+                "language": "en",
+                "page": page,
+                "pageSize": page_size,
+            }
+
         response = requests.get(url, params=params)
-        
         if response.status_code != 200:
-            print(f"NewsAPI error: {response.status_code}")
-            return None
-        
+            return []
         data = response.json()
-        
-        if data["status"] != "ok":
-            print(f"NewsAPI returned error: {data}")
-            return None
-        
-        return data["articles"]
-        
+        return data.get("articles", []) if data.get("status") == "ok" else []
     except Exception as e:
-        print(f"Error fetching news: {e}")
-        return None
+        print(f"Error fetching topic '{topic}': {e}")
+        return []
 
 def search_news(query, from_date=None, sort_by="publishedAt", page=1, page_size=20):
     """
     Search for news articles by keyword
-    
+
     sort_by options: relevancy, popularity, publishedAt
     """
     try:

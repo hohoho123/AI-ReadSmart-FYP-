@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Header
-from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timedelta
 import uuid
@@ -67,6 +66,7 @@ async def ai_chat(
         
         # Handle AI failure
         if not ai_response:
+            print(f"[CHAT] Gemini returned None for article '{request.article_title}', article_content length: {len(request.article_content or '')}")
             ai_response = f"Sorry, I couldn't process your question about '{request.article_title}'. Please try again."
         
         return {
@@ -302,33 +302,34 @@ async def conversation_followup(
         if conversation["expires_at"] < datetime.now():
             raise HTTPException(status_code=410, detail="Conversation expired")
         
-        # Check if user is asking for updates/recap
-        message_lower = request.message.lower()
-        is_recap_request = any(word in message_lower for word in ["update", "new", "what's new", "changed", "recap", "latest"])
-        
-        if is_recap_request:
+        # Route based on whether frontend sent new article text (Smart Recap)
+        if request.new_article_text:
             # Smart Recap - compare with current news
             old_messages = conversation.get("messages", [])
             ai_response = compare_for_smart_recap(
                 old_conversation=old_messages,
-                new_article_text=request.new_article_text 
+                new_article_text=request.new_article_text,
+                original_article_text=request.original_article_text,
             )
             
             if not ai_response:
-                ai_response = f"[Smart Recap] No significant updates found for '{conversation['article_title']}' since your last conversation."
-            else:
-                ai_response = f"[Smart Recap] {ai_response}"
+                ai_response = f"No significant updates found for '{conversation['article_title']}' since your last conversation."
         else:
-            # Regular followup - continue conversation with AI
+            # Regular followup — use DB history + original article text if provided
             ai_response = chat_with_ai(
                 user_message=request.message,
-                article_text="",  # No article content for followups
+                article_text=request.original_article_text if request.original_article_text else None,
                 conversation_history=conversation.get("messages", [])
             )
             
             if not ai_response:
+                print(f"[FOLLOWUP] Gemini returned None for '{conversation['article_title']}', history length: {len(conversation.get('messages', []))}")
                 ai_response = f"Sorry, I couldn't process your followup about '{conversation['article_title']}'. Please try again."
         
+        # Append latest article URL to AI response if provided (so it's persisted too)
+        if request.latest_article_url:
+            ai_response = f"{ai_response}\n\nLatest Article: {request.latest_article_url}"
+
         # Add new messages to conversation
         now = datetime.now()
         new_user_msg = {

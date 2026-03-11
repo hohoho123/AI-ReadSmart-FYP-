@@ -3,6 +3,7 @@ import { storage } from '../utils/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   initializeAuth, 
+  getAuth,
   getReactNativePersistence,
   signInWithEmailAndPassword, 
   signOut,
@@ -42,9 +43,7 @@ if (getApps().length === 0) {
   });
 } else {
   app = getApp();
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
-  });
+  auth = getAuth(app);
 }
 
 // Export for api.js to use
@@ -57,7 +56,7 @@ export function getFirebaseAuth() {
 // ===========================================
 export const authService = {
   // Signup
-  async signup(email, password, displayName, fullName, phone, topics) {
+  async signup(email, password, displayName, fullName, phone, topics, ttsVoice, playbackSpeed) {
     // Call our newly updated backend route
     const response = await api.post('/auth/signup', {
       email: email,
@@ -65,7 +64,9 @@ export const authService = {
       display_name: displayName,
       full_name: fullName,
       phone: phone,
-      followed_topics: topics || []
+      followed_topics: topics || [],
+      tts_voice: ttsVoice || 'voice_a',
+      playback_speed: playbackSpeed || '1.0x'
     });
     
     // Log them into Firebase on the frontend

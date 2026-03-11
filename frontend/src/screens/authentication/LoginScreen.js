@@ -3,11 +3,13 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, 
   SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator 
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../backend_services';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -62,12 +64,17 @@ export default function LoginScreen({ navigation }) {
           />
 
           <Text style={styles.label}>Password<Text style={styles.asterisk}>*</Text></Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={true}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -149,6 +156,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#000000',
   },
+  passwordContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 14, marginBottom: 20 },
+  passwordInput: { flex: 1, paddingVertical: 14, fontSize: 16, color: '#000000' },
   forgotPassword: {
     alignSelf: 'flex-end',
     marginBottom: 24,

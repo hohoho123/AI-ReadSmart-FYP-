@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Header
-from datetime import datetime, timedelta
-import uuid
-from application.data_models import UserCreate, UserLogin, UserResponse, SuccessResponse
+from datetime import datetime
+from application.data_models import UserCreate, UserLogin
 from application.database import (
     users_collection,
     get_user_by_email,
@@ -13,7 +12,9 @@ from application.authentication import create_firebase_user, get_user_by_email a
 # Create router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# Signup endpoint
+# =========================================================
+# SIGNUP 
+# =========================================================
 @router.post("/signup")
 async def signup(user_data: UserCreate):
     try:
@@ -32,10 +33,11 @@ async def signup(user_data: UserCreate):
         if not firebase_user:
             raise HTTPException(status_code=500, detail="Failed to create user in Firebase")
         
+        actual_uid = firebase_user.uid
+        
         # 3. Create user in MongoDB
-        user_id = str(uuid.uuid4())
         new_user = {
-            "user_id": user_id,
+            "user_id": actual_uid,
             "email": user_data.email,
             "display_name": user_data.display_name,
             "full_name": user_data.full_name,
@@ -48,10 +50,10 @@ async def signup(user_data: UserCreate):
         
         # 4. Immediately create their preferences in MongoDB
         new_prefs = {
-            "user_id": user_id,
+            "user_id": actual_uid,
             "followed_topics": user_data.followed_topics,
-            "tts_voice": "voice_a",
-            "playback_speed": "1.0x",
+            "tts_voice": user_data.tts_voice,
+            "playback_speed": user_data.playback_speed,
             "tts_enabled": True,
             "stt_enabled": True,
             "updated_at": datetime.now()
@@ -62,7 +64,7 @@ async def signup(user_data: UserCreate):
             "status": "success",
             "message": "Account and profile created successfully",
             "user": {
-                "user_id": user_id,
+                "user_id": actual_uid,
                 "email": user_data.email,
                 "display_name": user_data.display_name,
                 "profile_completed": True
@@ -74,7 +76,9 @@ async def signup(user_data: UserCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signup failed: {str(e)}")
 
-# Login endpoint
+# =========================================================
+# LOGIN
+# =========================================================
 @router.post("/login")
 async def login(credentials: UserLogin):
     """
@@ -109,7 +113,9 @@ async def login(credentials: UserLogin):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
-# Verify token endpoint
+# =========================================================
+# VERIFY TOKEN
+# =========================================================
 @router.get("/verify")
 async def verify_user_token(authorization: str = Header(None)):
     """
@@ -151,7 +157,9 @@ async def verify_user_token(authorization: str = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
-# Get current user endpoint
+# =========================================================
+# CURRENT USER INFO
+# =========================================================
 @router.get("/me")
 async def get_current_user(authorization: str = Header(None)):
     """
@@ -183,12 +191,70 @@ async def get_current_user(authorization: str = Header(None)):
                 "user_id": user["user_id"],
                 "email": user["email"],
                 "display_name": user["display_name"],
+                "full_name": user.get("full_name", ""),
+                "phone": user.get("phone", ""),
                 "created_at": user["created_at"].isoformat(),
                 "preferences": {
                     "followed_topics": prefs.get("followed_topics", []) if prefs else [],
                     "tts_voice": prefs.get("tts_voice", "voice_a") if prefs else "voice_a",
                     "playback_speed": prefs.get("playback_speed", "1.0x") if prefs else "1.0x"
                 }
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =========================================================
+# PROFILE UPDATE
+# =========================================================
+@router.put("/update-profile")
+async def update_profile(
+    updates: dict,
+    authorization: str = Header(None)
+):
+    """
+    Update user profile fields (display_name, full_name, phone)
+    """
+    try:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
+        token = authorization.split("Bearer ")[1]
+        decoded = verify_token(token)
+        if not decoded:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        user = users_collection.find_one({"firebase_uid": decoded["uid"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Only allow updating safe fields
+        allowed = {"display_name", "full_name", "phone"}
+        update_fields = {k: v for k, v in updates.items() if k in allowed and v is not None}
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
+        
+        update_fields["updated_at"] = datetime.now()
+        
+        users_collection.update_one(
+            {"user_id": user["user_id"]},
+            {"$set": update_fields}
+        )
+        
+        updated_user = users_collection.find_one({"user_id": user["user_id"]})
+        
+        return {
+            "status": "success",
+            "user": {
+                "user_id": updated_user["user_id"],
+                "email": updated_user["email"],
+                "display_name": updated_user["display_name"],
+                "full_name": updated_user.get("full_name", ""),
+                "phone": updated_user.get("phone", ""),
             }
         }
         

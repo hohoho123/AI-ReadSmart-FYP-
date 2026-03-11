@@ -4,92 +4,82 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure Gemini
+# =========================================================
+# MODEL INITIALISATION
+# =========================================================
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 
-# Create model instance
-model = None
+_model = None
+
 
 def load_ai_model():
     """
-    Initialize Gemini model on startup
+    Initialises and returns the Gemini model instance.
     """
-    global model
-    
-    if model is None:
+    global _model
+
+    if _model is None:
         print("Loading Gemini AI model...")
-        
-        # Using Gemini 2.5 Flash 
-        model = genai.GenerativeModel('models/gemini-2.5-flash')
-        
-        print("Gemini 2.5 Flash model loaded successfully!")
-    
-    return model
+        _model = genai.GenerativeModel('models/gemini-2.5-flash')
+        print("Gemini 2.5 Flash model loaded successfully.")
 
-def load_system_prompt():
+    return _model
+
+
+# =========================================================
+# PROMPT LOADERS
+# =========================================================
+
+def _load_prompt(filename: str) -> str:
     """
-    Load system prompt from markdown file
-    You can create this file later with your instructions
+    Loads a system prompt from the /prompts directory by filename.
+    Returns a minimal fallback string if the file cannot be read.
     """
-    prompt_path = os.path.join(os.path.dirname(__file__), '..', 'prompts', 'summarizer.md')
-    
-    # Default prompt if file doesn't exist
-    default_prompt = """You are an intelligent news summarizer for AI-ReadSmart, a voice-first news application.
-
-Your role:
-- Provide concise, clear summaries of news articles
-- Answer user questions based ONLY on the article content
-- Use simple, accessible language
-- Be conversational and helpful
-- If information is not in the article, say "I don't have that information in this article"
-
-Keep responses brief and focused."""
-    
+    prompt_path = os.path.join(os.path.dirname(__file__), '..', 'prompts', filename)
     try:
-        if os.path.exists(prompt_path):
-            with open(prompt_path, 'r') as f:
-                return f.read()
-        else:
-            return default_prompt
+        with open(prompt_path, 'r') as f:
+            return f.read()
     except Exception as e:
-        print(f"Error loading prompt: {e}")
-        return default_prompt
+        print(f"Error loading prompt '{filename}': {e}")
+        return "You are a helpful assistant."
 
-def chat_with_ai(user_message, article_text, conversation_history=None):
+
+# =========================================================
+# AI CONVERSATION
+# =========================================================
+
+def chat_with_ai(user_message: str, article_text, conversation_history=None) -> str | None:
     """
-    Main function for AI conversation
-    
-    Args:
-        user_message: User's question or request
-        article_text: The article content
-        conversation_history: Previous messages (optional)
-    
-    Returns:
-        AI response string
+    Sends a message to Gemini and returns the text response.
+
+    Parameters
+    ----------
+    user_message      : The user's latest question or follow-up.
+    article_text      : The scraped article text to ground the response in.
+                        Pass None for follow-up turns where the article was already
+                        discussed and only conversation history is needed.
+    conversation_history : List of prior message dicts with 'role' and 'content' keys.
+
+    Returns
+    -------
+    The AI response string, or None on error.
     """
     try:
-        ai_model = load_ai_model()
-        system_prompt = load_system_prompt()
-        
-        # Build the full prompt
-        full_prompt = f"""{system_prompt}
+        model = load_ai_model()
+        system_prompt = _load_prompt('articles_summarizer.md')
 
-ARTICLE CONTENT:
-{article_text}
-
-USER MESSAGE:
-{user_message}
-
-Respond to the user's message based on the article above."""
-        
-        # If there's conversation history, include it
-        if conversation_history and len(conversation_history) > 0:
+        # Build the conversation history block
+        history_text = ""
+        if conversation_history:
             history_text = "\n\nPREVIOUS CONVERSATION:\n"
             for msg in conversation_history:
                 role = "User" if msg.get("role") == "user" else "Assistant"
                 history_text += f"{role}: {msg.get('content')}\n"
-            
+
+        # First turn — article is available, ground the response in it
+        if article_text is not None:
             full_prompt = f"""{system_prompt}
 
 ARTICLE CONTENT:
@@ -100,81 +90,112 @@ USER MESSAGE:
 {user_message}
 
 Respond to the user's message based on the article and conversation history above."""
-        
-        # Generate response
-        response = ai_model.generate_content(full_prompt)
-        
+
+        # Follow-up turn — rely solely on conversation history for context
+        else:
+            full_prompt = f"""{system_prompt}
+{history_text}
+
+USER MESSAGE:
+{user_message}
+
+Continue the conversation naturally. Use the conversation history as your context — the original article was already discussed in the messages above."""
+
+        response = model.generate_content(full_prompt)
         return response.text
-        
+
     except Exception as e:
-        print(f"Gemini API error: {e}")
+        print(f"Gemini API error in chat_with_ai: {e}")
         return None
 
-def summarize_article(article_text):
+
+# =========================================================
+# ARTICLE SUMMARISATION
+# =========================================================
+
+def summarize_article(article_text: str) -> str | None:
     """
-    Generate a summary of an article
+    Generates factual summary of an article.
+    Used by the quick-summarise endpoint in main.py.
+
+    Returns the summary string, or None on error.
     """
     try:
-        ai_model = load_ai_model()
-        
+        model = load_ai_model()
+
         prompt = f"""Summarize this news article in 2-3 clear sentences. Focus on the main facts.
 
 Article:
 {article_text}
 
 Summary:"""
-        
-        response = ai_model.generate_content(prompt)
+
+        response = model.generate_content(prompt)
         return response.text
-        
+
     except Exception as e:
-        print(f"Summarization error: {e}")
+        print(f"Gemini API error in summarize_article: {e}")
         return None
 
-def compare_for_smart_recap(old_conversation, new_article_text):
+
+# =========================================================
+# SMART RECAP COMPARISON
+# =========================================================
+
+def compare_for_smart_recap(
+    old_conversation: list,
+    new_article_text: str,
+    original_article_text=None
+) -> str | None:
     """
-    Compare old conversation with current news for Smart Recap
-    
-    Args:
-        old_conversation: Previous conversation messages
-        new_article_text: Current article about same topic (can be None)
-    
-    Returns:
-        Comparison highlighting what changed
+    Compares the user's original article against a freshly fetched article on the
+    same topic and generates a spoken Smart Recap update.
+
+    Parameters
+    ----------
+    old_conversation      : Full conversation history for the original article.
+    new_article_text      : Scraped text from the latest article on the same topic.
+    original_article_text : Re-scraped text of the original article (preferred).
+                            Falls back to the first assistant message in history
+                            when not available.
+
+    Returns
+    -------
+    The Smart Recap response string, or None on error.
     """
     try:
-        ai_model = load_ai_model()
-        
-        # Extract original messages from old conversation
-        original_content = ""
-        for msg in old_conversation:
-            if msg.get("role") == "assistant":
-                original_content = msg.get("content", "")
-                break
-        
-        # If no new article, return a note about no updates
+        model = load_ai_model()
+
         if not new_article_text:
-            return f"Based on your previous conversation, here's what I found: {original_content[:200]}... No new articles available to compare."
-        
-        prompt = f"""You are comparing an old conversation with current news.
+            return None
 
-ORIGINAL CONVERSATION SUMMARY:
-{original_content}
+        system_prompt = _load_prompt('smart_recap.md')
 
-CURRENT ARTICLE:
-{new_article_text}
+        # Prefer article-vs-article comparison; fall back to conversation-vs-article
+        if original_article_text:
+            context_label = "ORIGINAL ARTICLE"
+            context_content = original_article_text
+        else:
+            context_label = "ORIGINAL CONVERSATION SUMMARY"
+            context_content = ""
+            for msg in old_conversation:
+                if msg.get("role") == "assistant":
+                    context_content = msg.get("content", "")
+                    break
 
-Task: Explain what's new or what has changed since the original conversation. Be specific about:
-- New developments
-- Price/number changes
-- Status updates
-- What stayed the same (if relevant)
+        prompt = f"""{system_prompt}
 
-Keep it concise (3-4 sentences)."""
-        
-        response = ai_model.generate_content(prompt)
+---
+
+{context_label}:
+{context_content}
+
+LATEST ARTICLE:
+{new_article_text}"""
+
+        response = model.generate_content(prompt)
         return response.text
-        
+
     except Exception as e:
-        print(f"Smart Recap comparison error: {e}")
+        print(f"Gemini API error in compare_for_smart_recap: {e}")
         return None

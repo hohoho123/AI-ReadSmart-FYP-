@@ -78,6 +78,7 @@ def synthesize_speech(text: str, voice_config: dict) -> bytes:
         audio_encoding=texttospeech.AudioEncoding.MP3,
         speaking_rate=1.0,
         pitch=0.0,
+        volume_gain_db=15.0,
         sample_rate_hertz=24000
     )
     
@@ -164,7 +165,7 @@ async def speech_to_text(request: STTRequest, authorization: str = Header(None))
         
         audio = speech.RecognitionAudio(content=audio_bytes)
         config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.MP3,
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=16000,
             language_code="en-US",
             enable_automatic_punctuation=True,

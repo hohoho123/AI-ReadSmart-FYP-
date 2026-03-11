@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { TOPIC_OPTIONS } from '../../utils/constants';
 
-const ALL_TOPICS = [
-  'National', 'International', 'Sport', 'Lifestyle', 'Business', 
-  'Health', 'Fashion', 'Technology', 'Science', 'Art', 'Politics'
+const VOICES = [
+  { id: 'voice_a', label: 'Voice A (Female)' },
+  { id: 'voice_b', label: 'Voice B (Male)' },
+  { id: 'voice_c', label: 'Voice C (Neutral)' }
 ];
 
+const SPEEDS = ['0.75x', '1.0x', '1.25x', '1.5x', '2.0x'];
+
 export default function TopicSelectionScreen({ navigation, route }) {
-  // 1. Catch the data passed from the Signup Screen
   const { signupData } = route.params || {}; 
   
-  const [search, setSearch] = useState('');
   const [selectedTopics, setSelectedTopics] = useState(['Technology']);
+  const [selectedVoice, setSelectedVoice] = useState('voice_a');
+  const [selectedSpeed, setSelectedSpeed] = useState('1.0x');
 
   const toggleTopic = (topic) => {
     if (selectedTopics.includes(topic)) {
@@ -23,11 +27,12 @@ export default function TopicSelectionScreen({ navigation, route }) {
   };
 
   const handleNext = () => {
-    // 2. Pass the old data PLUS the new topics forward to the final screen
     navigation.navigate('FillProfile', {
       signupData: {
         ...signupData,
-        topics: selectedTopics
+        topics: selectedTopics,
+        ttsVoice: selectedVoice,
+        playbackSpeed: selectedSpeed
       }
     });
   };
@@ -38,35 +43,64 @@ export default function TopicSelectionScreen({ navigation, route }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#000000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Choose your Topics</Text>
+        <Text style={styles.headerTitle}>Personalize Feed</Text>
         <View style={{ width: 24 }} /> 
       </View>
 
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search"
-          value={search}
-          onChangeText={setSearch}
-        />
-        <Ionicons name="search-outline" size={20} color="#6B7280" style={styles.searchIcon} />
-      </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Topics Section */}
+        <Text style={styles.sectionLabel}>Choose your Topics</Text>
+        <View style={styles.pillContainer}>
+          {TOPIC_OPTIONS.map((topic) => {
+            const isSelected = selectedTopics.includes(topic.label);
+            return (
+              <TouchableOpacity
+                key={topic.id}
+                style={[styles.topicPill, isSelected && styles.topicPillSelected]}
+                onPress={() => toggleTopic(topic.label)}
+              >
+                <Text style={[styles.topicText, isSelected && styles.topicTextSelected]}>{topic.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-      <ScrollView contentContainerStyle={styles.topicsContainer}>
-        {ALL_TOPICS.map((topic) => {
-          const isSelected = selectedTopics.includes(topic);
-          return (
-            <TouchableOpacity
-              key={topic}
-              style={[styles.topicPill, isSelected && styles.topicPillSelected]}
-              onPress={() => toggleTopic(topic)}
-            >
-              <Text style={[styles.topicText, isSelected && styles.topicTextSelected]}>
-                {topic}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        {/* Voice Section */}
+        <Text style={styles.sectionLabel}>Select Audio Voice</Text>
+        <View style={styles.pillContainer}>
+          {VOICES.map((voice) => {
+            const isSelected = selectedVoice === voice.id;
+            return (
+              <TouchableOpacity
+                key={voice.id}
+                style={[styles.topicPill, isSelected && styles.topicPillSelected]}
+                onPress={() => setSelectedVoice(voice.id)}
+              >
+                <Text style={[styles.topicText, isSelected && styles.topicTextSelected]}>{voice.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Speed Section */}
+        <Text style={styles.sectionLabel}>Default Playback Speed</Text>
+        <View style={styles.pillContainer}>
+          {SPEEDS.map((speed) => {
+            const isSelected = selectedSpeed === speed;
+            return (
+              <TouchableOpacity
+                key={speed}
+                style={[styles.topicPill, isSelected && styles.topicPillSelected]}
+                onPress={() => setSelectedSpeed(speed)}
+              >
+                <Text style={[styles.topicText, isSelected && styles.topicTextSelected]}>{speed}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        
+        {/* Extra padding at bottom for scrolling */}
+        <View style={{ height: 40 }} />
       </ScrollView>
 
       <View style={styles.footer}>
@@ -83,15 +117,13 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16 },
   backButton: { padding: 4 },
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#000000' },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginBottom: 20, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 12 },
-  searchInput: { flex: 1, paddingVertical: 12, fontSize: 16 },
-  searchIcon: { marginLeft: 8 },
-  topicsContainer: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 10 },
+  sectionLabel: { fontSize: 16, fontWeight: 'bold', color: '#000000', marginHorizontal: 20, marginTop: 20, marginBottom: 12 },
+  pillContainer: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 10 },
   topicPill: { borderWidth: 1, borderColor: '#FF3B30', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#FFFFFF' },
   topicPillSelected: { backgroundColor: '#FF3B30' },
   topicText: { color: '#FF3B30', fontSize: 14, fontWeight: '500' },
   topicTextSelected: { color: '#FFFFFF' },
-  footer: { paddingHorizontal: 20, paddingBottom: 30, paddingTop: 10 },
+  footer: { paddingHorizontal: 20, paddingBottom: 30, paddingTop: 10, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   nextButton: { backgroundColor: '#FF3B30', paddingVertical: 16, borderRadius: 8, alignItems: 'center' },
   nextButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }
 });

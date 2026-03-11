@@ -16,8 +16,8 @@ api.interceptors.request.use(
       const user = auth.currentUser;
       
       if (user) {
-        // getIdToken(true) auto-refreshes if expired
-        const token = await user.getIdToken(true);
+        // getIdToken() uses cached token, only refreshes when near expiry
+        const token = await user.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {

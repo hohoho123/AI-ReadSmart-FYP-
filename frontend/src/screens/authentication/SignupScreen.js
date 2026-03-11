@@ -5,6 +5,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+const PASSWORD_RULES = [
+  { key: 'length',    label: 'At least 8 characters',          test: v => v.length >= 8 },
+  { key: 'upper',     label: 'At least one uppercase letter',   test: v => /[A-Z]/.test(v) },
+  { key: 'lower',     label: 'At least one lowercase letter',   test: v => /[a-z]/.test(v) },
+  { key: 'number',    label: 'At least one number',             test: v => /[0-9]/.test(v) },
+  { key: 'special',   label: 'At least one special character',  test: v => /[!@#$%^&*(),.?":{}|<>_\-\[\]\/\\]/.test(v) },
+];
+
 export default function SignupScreen({ navigation }) {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,9 +20,15 @@ export default function SignupScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
+  const allRulesPassed = PASSWORD_RULES.every(r => r.test(password));
+
   const handleNext = () => {
     if (!displayName || !email || !password) {
       setError('Please fill in all required fields.');
+      return;
+    }
+    if (!allRulesPassed) {
+      setError('Please make sure your password meets all requirements.');
       return;
     }
     setError('');
@@ -68,6 +82,26 @@ export default function SignupScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
+          {password.length > 0 && (
+            <View style={styles.rulesContainer}>
+              {PASSWORD_RULES.map(rule => {
+                const passed = rule.test(password);
+                return (
+                  <View key={rule.key} style={styles.ruleRow}>
+                    <Ionicons
+                      name={passed ? 'checkbox' : 'square-outline'}
+                      size={16}
+                      color={passed ? '#22C55E' : '#9CA3AF'}
+                    />
+                    <Text style={[styles.ruleText, passed && styles.ruleTextPassed]}>
+                      {rule.label}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <TouchableOpacity style={styles.primaryButton} onPress={handleNext}>
@@ -98,6 +132,10 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 14, fontSize: 16, marginBottom: 20, color: '#000000' },
   passwordContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 14, marginBottom: 10 },
   passwordInput: { flex: 1, paddingVertical: 14, fontSize: 16, color: '#000000' },
+  rulesContainer: { backgroundColor: '#F9FAFB', borderRadius: 8, padding: 10, marginBottom: 12, gap: 6 },
+  ruleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ruleText: { fontSize: 13, color: '#9CA3AF' },
+  ruleTextPassed: { color: '#22C55E' },
   errorText: { color: '#FF3B30', marginBottom: 20, textAlign: 'center' },
   primaryButton: { backgroundColor: '#FF3B30', paddingVertical: 16, borderRadius: 8, alignItems: 'center', marginBottom: 24 },
   primaryButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },

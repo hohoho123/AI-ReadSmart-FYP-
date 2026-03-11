@@ -202,7 +202,7 @@ async def manual_cleanup():
         raise HTTPException(status_code=500, detail=str(e))
     
 # ===========================
-# AI TEST ENDPOINT
+# AI TEST ENDPOINT (for development)
 # ===========================
 
 @app.post("/test-ai")

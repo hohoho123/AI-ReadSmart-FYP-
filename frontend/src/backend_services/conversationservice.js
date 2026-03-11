@@ -43,10 +43,12 @@ export const conversationService = {
   },
 
   // Smart Recap (Phase 12)
-  async smartRecap(conversationId, message, newArticleText = null) {
+  async smartRecap(conversationId, message, newArticleText = null, originalArticleText = null, latestArticleUrl = null) {
     const response = await api.post(`/conversation/${conversationId}/followup`, {
       message,
       new_article_text: newArticleText,
+      original_article_text: originalArticleText,
+      latest_article_url: latestArticleUrl,
     });
     return { success: true, response: response.data.response };
   },

@@ -11,10 +11,11 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     display_name: str = Field(min_length=2, max_length=50)
-    # New fields collected from the FillProfile screen
     full_name: Optional[str] = None
     phone: Optional[str] = None
     followed_topics: List[str] = []
+    tts_voice: Optional[str] = "voice_a"
+    playback_speed: Optional[str] = "1.0x"
 
 class UserLogin(BaseModel):
     """For user login"""
@@ -67,6 +68,12 @@ class PreferencesUpdate(BaseModel):
     tts_enabled: Optional[bool] = None   
     stt_enabled: Optional[bool] = None   
 
+class ProfileUpdate(BaseModel):
+    """For updating user profile"""
+    display_name: Optional[str] = None
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+
 # ===========================
 # ARTICLE MODELS
 # ===========================
@@ -118,7 +125,9 @@ class SaveConversationRequest(BaseModel):
 class FollowupRequest(BaseModel):
     """Request for Smart Recap followup"""
     message: str  # User's followup question
-    new_article_text: Optional[str] = None  # Optional: new article to compare
+    new_article_text: Optional[str] = None  # Optional: latest article to compare
+    original_article_text: Optional[str] = None  # Optional: original article for richer text-vs-text comparison
+    latest_article_url: Optional[str] = None  # Optional: URL of latest article, appended to saved AI response
 
 # ===========================
 # VOICE & AUDIO MODELS
@@ -127,7 +136,7 @@ class FollowupRequest(BaseModel):
 class TTSRequest(BaseModel):
     """Text-to-Speech request for Google Cloud TTS"""
     text: str
-    voice_id: Optional[str] = "voice_a"  # Default: George (warm male)
+    voice_id: Optional[str] = "voice_a"  
 
 class STTRequest(BaseModel):
     """Speech-to-Text request for Google Cloud STT (used by /voice/stt endpoint)"""

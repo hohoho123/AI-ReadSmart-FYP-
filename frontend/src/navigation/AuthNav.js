@@ -6,21 +6,58 @@ import LoginScreen from '../screens/authentication/LoginScreen';
 import SignupScreen from '../screens/authentication/SignupScreen';
 import TopicSelectionScreen from '../screens/authentication/TopicSelectionScreen';
 import FillProfileScreen from '../screens/authentication/FillProfileScreen';
-// 1. Import the new Home Screen
-import HomeScreen from '../screens/main/HomeScreen'; 
+import HomeScreen from '../screens/main/HomeScreen';
+import ExploreScreen from '../screens/main/ExploreScreen';
+import ArticleDetailScreen from '../screens/main/ArticleDetailScreen'; 
+import ConversationHistoryScreen from '../screens/main/ConversationHistoryScreen';
+import ConversationDetailScreen from '../screens/main/ConversationDetailScreen';
+import ProfileScreen from '../screens/settings/ProfileScreen';
+import AccountDetailsScreen from '../screens/settings/AccountDetailsScreen';
+import AudioControlScreen from '../screens/settings/AudioControlScreen';
+import NotificationScreen from '../screens/settings/NotificationScreen';
+import SecurityScreen from '../screens/settings/SecurityScreen';
 
 export default function AuthNavigator() {
   const [currentRoute, setCurrentRoute] = useState('Loading');
+  const [routeHistory, setRouteHistory] = useState([]);
+  const listenersRef = React.useRef({});
+
+  const emit = (event) => {
+    (listenersRef.current[event] || []).forEach(cb => cb());
+  };
 
   const navigation = {
-    navigate: (route, params) => setCurrentRoute({ name: route, params }),
+    navigate: (route, params) => {
+      setRouteHistory(prev => [...prev, currentRoute]);
+      setCurrentRoute({ name: route, params });
+    },
     replace: (route, params) => setCurrentRoute({ name: route, params }),
-    goBack: () => setCurrentRoute({ name: 'Login' }) // Simplified for now
+    goBack: () => {
+      setRouteHistory(prev => {
+        const stack = [...prev];
+        const previous = stack.pop();
+        if (previous) {
+          setCurrentRoute(previous);
+        }
+        return stack;
+      });
+    },
+    addListener: (event, callback) => {
+      listenersRef.current[event] = [...(listenersRef.current[event] || []), callback];
+      return () => {
+        listenersRef.current[event] = (listenersRef.current[event] || []).filter(cb => cb !== callback);
+      };
+    },
   };
 
   // Handle route state which can now be an object {name, params} or just a string
   const routeName = typeof currentRoute === 'string' ? currentRoute : currentRoute.name;
   const routeParams = typeof currentRoute === 'object' ? currentRoute.params : {};
+
+  // Emit focus event whenever the active screen changes
+  React.useEffect(() => {
+    emit('focus');
+  }, [routeName]);
 
   let ScreenComponent;
   switch (routeName) {
@@ -39,9 +76,35 @@ export default function AuthNavigator() {
     case 'FillProfile':
       ScreenComponent = FillProfileScreen;
       break;
-    // 2. Add the case for Home
     case 'Home':
       ScreenComponent = HomeScreen;
+      break;
+    case 'Explore':
+      ScreenComponent = ExploreScreen;
+      break;
+    case 'ArticleDetail':
+      ScreenComponent = ArticleDetailScreen;
+      break;
+    case 'ConversationHistory':
+      ScreenComponent = ConversationHistoryScreen;
+      break;
+    case 'ConversationDetail':
+      ScreenComponent = ConversationDetailScreen;
+      break;
+    case 'Profile':
+      ScreenComponent = ProfileScreen;
+      break;
+    case 'AccountDetails':
+      ScreenComponent = AccountDetailsScreen;
+      break;
+    case 'AudioControl':
+      ScreenComponent = AudioControlScreen;
+      break;
+    case 'Notification':
+      ScreenComponent = NotificationScreen;
+      break;
+    case 'Security':
+      ScreenComponent = SecurityScreen;
       break;
     default:
       ScreenComponent = LoadingScreen;

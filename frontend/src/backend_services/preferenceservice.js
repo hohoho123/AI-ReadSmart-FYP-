@@ -3,11 +3,10 @@ import { storage } from '../utils/storage';
 
 export const preferencesService = {
   // Profile setup (Phase 4)
-  async setupProfile(followedTopics, ttsVoice, playbackSpeed = "1.0x") {
+  async setupProfile(followedTopics, ttsVoice) {
     const response = await api.post('/preferences/setup', {
       followed_topics: followedTopics,
       tts_voice: ttsVoice,
-      playback_speed: String(playbackSpeed),
     });
     await storage.savePreferences(response.data.preferences);
     return { success: true, preferences: response.data.preferences };
@@ -27,7 +26,6 @@ export const preferencesService = {
     const payload = {};
     if (updates.followedTopics) payload.followed_topics = updates.followedTopics;
     if (updates.ttsVoice) payload.tts_voice = updates.ttsVoice;
-    if (updates.playbackSpeed) payload.playback_speed = updates.playbackSpeed;
     if (updates.ttsEnabled !== undefined) payload.tts_enabled = updates.ttsEnabled;
     if (updates.sttEnabled !== undefined) payload.stt_enabled = updates.sttEnabled;
 

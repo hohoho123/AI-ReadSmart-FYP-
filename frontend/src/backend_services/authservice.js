@@ -56,7 +56,7 @@ export function getFirebaseAuth() {
 // ===========================================
 export const authService = {
   // Signup
-  async signup(email, password, displayName, fullName, phone, topics, ttsVoice, playbackSpeed) {
+  async signup(email, password, displayName, fullName, phone, topics, ttsVoice) {
     // Call our newly updated backend route
     const response = await api.post('/auth/signup', {
       email: email,
@@ -66,7 +66,6 @@ export const authService = {
       phone: phone,
       followed_topics: topics || [],
       tts_voice: ttsVoice || 'voice_a',
-      playback_speed: playbackSpeed || '1.0x'
     });
     
     // Log them into Firebase on the frontend

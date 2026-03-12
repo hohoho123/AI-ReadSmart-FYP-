@@ -40,7 +40,6 @@ async def setup_profile(
             "user_id": user["user_id"],
             "followed_topics": profile_data.followed_topics,
             "tts_voice": profile_data.tts_voice,
-            "playback_speed": profile_data.playback_speed,
             "updated_at": datetime.now()
         }
         
@@ -62,8 +61,7 @@ async def setup_profile(
             "message": "Profile setup completed",
             "preferences": {
                 "followed_topics": profile_data.followed_topics,
-                "tts_voice": profile_data.tts_voice,
-                "playback_speed": profile_data.playback_speed
+                "tts_voice": profile_data.tts_voice
             }
         }
         
@@ -100,8 +98,7 @@ async def get_preferences(authorization: str = Header(None)):
                 "status": "success",
                 "preferences": {
                     "followed_topics": [],
-                    "tts_voice": "voice_a",
-                    "playback_speed": "1.0x"
+                    "tts_voice": "voice_a"
                 }
             }
         
@@ -109,8 +106,7 @@ async def get_preferences(authorization: str = Header(None)):
             "status": "success",
             "preferences": {
                 "followed_topics": prefs.get("followed_topics", []),
-                "tts_voice": prefs.get("tts_voice", "voice_a"),
-                "playback_speed": prefs.get("playback_speed", "1.0x")
+                "tts_voice": prefs.get("tts_voice", "voice_a")
             }
         }
         
@@ -272,9 +268,6 @@ async def update_preferences(
         if updates.tts_voice is not None:
             update_data["tts_voice"] = updates.tts_voice
         
-        if updates.playback_speed is not None:
-            update_data["playback_speed"] = updates.playback_speed
-        
         if updates.text_size is not None:
             update_data["text_size"] = updates.text_size
 
@@ -299,7 +292,6 @@ async def update_preferences(
             "preferences": {
                 "followed_topics": prefs.get("followed_topics", []),
                 "tts_voice": prefs.get("tts_voice", "voice_a"),
-                "playback_speed": prefs.get("playback_speed", "1.0x"),
                 "text_size": prefs.get("text_size", "medium")
             }
         }

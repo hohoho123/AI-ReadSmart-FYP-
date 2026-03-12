@@ -9,14 +9,11 @@ const VOICES = [
   { id: 'voice_c', label: 'Voice C (Neutral)' }
 ];
 
-const SPEEDS = ['0.75x', '1.0x', '1.25x', '1.5x', '2.0x'];
-
 export default function TopicSelectionScreen({ navigation, route }) {
   const { signupData } = route.params || {}; 
   
   const [selectedTopics, setSelectedTopics] = useState(['Technology']);
   const [selectedVoice, setSelectedVoice] = useState('voice_a');
-  const [selectedSpeed, setSelectedSpeed] = useState('1.0x');
 
   const toggleTopic = (topic) => {
     if (selectedTopics.includes(topic)) {
@@ -31,8 +28,7 @@ export default function TopicSelectionScreen({ navigation, route }) {
       signupData: {
         ...signupData,
         topics: selectedTopics,
-        ttsVoice: selectedVoice,
-        playbackSpeed: selectedSpeed
+        ttsVoice: selectedVoice
       }
     });
   };
@@ -77,23 +73,6 @@ export default function TopicSelectionScreen({ navigation, route }) {
                 onPress={() => setSelectedVoice(voice.id)}
               >
                 <Text style={[styles.topicText, isSelected && styles.topicTextSelected]}>{voice.label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Speed Section */}
-        <Text style={styles.sectionLabel}>Default Playback Speed</Text>
-        <View style={styles.pillContainer}>
-          {SPEEDS.map((speed) => {
-            const isSelected = selectedSpeed === speed;
-            return (
-              <TouchableOpacity
-                key={speed}
-                style={[styles.topicPill, isSelected && styles.topicPillSelected]}
-                onPress={() => setSelectedSpeed(speed)}
-              >
-                <Text style={[styles.topicText, isSelected && styles.topicTextSelected]}>{speed}</Text>
               </TouchableOpacity>
             );
           })}

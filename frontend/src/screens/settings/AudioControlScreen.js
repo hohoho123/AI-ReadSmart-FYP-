@@ -5,14 +5,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferencesService } from '../../backend_services';
-import { VOICE_OPTIONS, SPEED_OPTIONS } from '../../utils/constants';
+import { VOICE_OPTIONS } from '../../utils/constants';
 
 export default function AudioControlScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState('voice_a');
-  const [selectedSpeed, setSelectedSpeed] = useState(1.0);
 
   useEffect(() => {
     (async () => {
@@ -20,8 +19,6 @@ export default function AudioControlScreen({ navigation }) {
         const prefs = await preferencesService.getPreferences();
         if (prefs) {
           setSelectedVoice(prefs.tts_voice || 'voice_a');
-          const speed = parseFloat(prefs.playback_speed) || 1.0;
-          setSelectedSpeed(speed);
         }
       } catch (e) {
         console.error('Failed to load preferences:', e);
@@ -36,7 +33,6 @@ export default function AudioControlScreen({ navigation }) {
     try {
       await preferencesService.updatePreferences({
         ttsVoice: selectedVoice,
-        playbackSpeed: `${selectedSpeed}x`,
       });
       Alert.alert('Saved', 'Audio settings updated.');
       navigation.goBack();
@@ -89,24 +85,6 @@ export default function AudioControlScreen({ navigation }) {
         ))}
       </View>
 
-      {/* Speed selection */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Playback Speed</Text>
-        <View style={styles.speedRow}>
-          {SPEED_OPTIONS.map((speed) => (
-            <TouchableOpacity
-              key={speed}
-              style={[styles.speedChip, selectedSpeed === speed && styles.speedChipActive]}
-              onPress={() => setSelectedSpeed(speed)}
-            >
-              <Text style={[styles.speedText, selectedSpeed === speed && styles.speedTextActive]}>
-                {speed}x
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
       {/* Save */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
@@ -136,15 +114,6 @@ const styles = StyleSheet.create({
   optionRowActive: { borderColor: '#FF3B30', backgroundColor: '#FFF5F5' },
   optionName: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
   optionDesc: { fontSize: 13, color: '#6B7280', marginTop: 2 },
-  speedRow: { flexDirection: 'row', gap: 10 },
-  speedChip: {
-    paddingVertical: 10, paddingHorizontal: 20,
-    borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB',
-    backgroundColor: '#F9FAFB',
-  },
-  speedChipActive: { borderColor: '#FF3B30', backgroundColor: '#FF3B30' },
-  speedText: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
-  speedTextActive: { color: '#FFFFFF' },
   footer: { paddingHorizontal: 24, marginTop: 'auto', marginBottom: 40 },
   saveBtn: {
     backgroundColor: '#FF3B30', borderRadius: 12,

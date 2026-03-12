@@ -105,7 +105,6 @@ def get_user_preferences(user_id: str):
             "user_id": user_id,
             "followed_topics": [],
             "tts_voice": "voice_a",
-            "playback_speed": "1.0x",
             "updated_at": datetime.now()
         }
         preferences_collection.update_one(

@@ -15,7 +15,6 @@ class UserCreate(BaseModel):
     phone: Optional[str] = None
     followed_topics: List[str] = []
     tts_voice: Optional[str] = "voice_a"
-    playback_speed: Optional[str] = "1.0x"
 
 class UserLogin(BaseModel):
     """For user login"""
@@ -43,7 +42,6 @@ class ProfileSetup(BaseModel):
     """First-time profile setup"""
     followed_topics: List[str] = Field(min_items=1, max_items=10)
     tts_voice: str = "voice_a"
-    playback_speed: str = "1.0x"
 
 # ===========================
 # USER PREFERENCES
@@ -54,7 +52,6 @@ class UserPreferences(BaseModel):
     user_id: str
     followed_topics: List[str] = []
     tts_voice: str = "voice_a"
-    playback_speed: str = "1.0x"
     tts_enabled: bool = True  
     stt_enabled: bool = True   
     updated_at: datetime = Field(default_factory=datetime.now)
@@ -63,7 +60,6 @@ class PreferencesUpdate(BaseModel):
     """For updating preferences"""
     followed_topics: Optional[List[str]] = None
     tts_voice: Optional[str] = None
-    playback_speed: Optional[str] = None
     text_size: Optional[str] = None
     tts_enabled: Optional[bool] = None   
     stt_enabled: Optional[bool] = None   

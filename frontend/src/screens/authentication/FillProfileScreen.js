@@ -38,8 +38,7 @@ export default function FillProfileScreen({ navigation, route }) {
         fullName, 
         phone, 
         signupData.topics,
-        signupData.ttsVoice,
-        signupData.playbackSpeed 
+        signupData.ttsVoice
       );
       
       if (response.success) {

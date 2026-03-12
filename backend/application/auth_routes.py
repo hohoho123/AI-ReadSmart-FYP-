@@ -53,7 +53,6 @@ async def signup(user_data: UserCreate):
             "user_id": actual_uid,
             "followed_topics": user_data.followed_topics,
             "tts_voice": user_data.tts_voice,
-            "playback_speed": user_data.playback_speed,
             "tts_enabled": True,
             "stt_enabled": True,
             "updated_at": datetime.now()
@@ -196,8 +195,7 @@ async def get_current_user(authorization: str = Header(None)):
                 "created_at": user["created_at"].isoformat(),
                 "preferences": {
                     "followed_topics": prefs.get("followed_topics", []) if prefs else [],
-                    "tts_voice": prefs.get("tts_voice", "voice_a") if prefs else "voice_a",
-                    "playback_speed": prefs.get("playback_speed", "1.0x") if prefs else "1.0x"
+                    "tts_voice": prefs.get("tts_voice", "voice_a") if prefs else "voice_a"
                 }
             }
         }

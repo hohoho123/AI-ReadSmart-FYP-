@@ -22,7 +22,7 @@ The backend is located in the `backend/` folder directory, operating asynchronou
 
 ---
 
-## 📱 Frontend Structure (React Native & Expo)
+## Frontend Structure (React Native & Expo)
 
 The frontend is located in the `frontend/` folder directory, designed for cross-platform (iOS/Android) mobile capabilities.
 
@@ -68,7 +68,8 @@ Because development spans a Windows host and a WSL (Windows Subsystem for Linux)
 #### Step 1: Start Backend & Port Forwarding (WSL / Windows PowerShell)
 
 1. Open **Windows PowerShell as Administrator** and execute:
-   ```powershell
+
+   ```
   $wsl_ip = (wsl hostname -I).Trim().Split(' ')[0]
   >> netsh interface portproxy delete v4tov4 listenport=8000 listenaddress=0.0.0.0
   >> netsh interface portproxy add v4tov4 listenport=8000 listenaddress=0.0.0.0 connectport=8000 connectaddress=$wsl_ip
@@ -76,7 +77,8 @@ Because development spans a Windows host and a WSL (Windows Subsystem for Linux)
    ```
 
 2. Launch the Backend Server back in your **WSL Terminal**:
-   ```bash
+
+   ```
    cd ~/AI-ReadSmart-FYP-/backend
    source venv/bin/activate
    uvicorn application.main:app --host 0.0.0.0 --port 8000 --reload

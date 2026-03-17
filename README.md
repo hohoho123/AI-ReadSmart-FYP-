@@ -70,10 +70,10 @@ Because development spans a Windows host and a WSL (Windows Subsystem for Linux)
 1. Open **Windows PowerShell as Administrator** and execute:
 
    ```
-  $wsl_ip = (wsl hostname -I).Trim().Split(' ')[0]
-  >> netsh interface portproxy delete v4tov4 listenport=8000 listenaddress=0.0.0.0
-  >> netsh interface portproxy add v4tov4 listenport=8000 listenaddress=0.0.0.0 connectport=8000 connectaddress=$wsl_ip
-  >> Write-Host "Bridge successfully connected to WSL IP: $wsl_ip" -ForegroundColor Green
+   $wsl_ip = (wsl hostname -I).Trim().Split(' ')[0]
+   >> netsh interface portproxy delete v4tov4 listenport=8000 listenaddress=0.0.0.0
+   >> netsh interface portproxy add v4tov4 listenport=8000 listenaddress=0.0.0.0 connectport=8000 connectaddress=$wsl_ip
+   >> Write-Host "Bridge successfully connected to WSL IP: $wsl_ip" -ForegroundColor Green
    ```
 
 2. Launch the Backend Server back in your **WSL Terminal**:

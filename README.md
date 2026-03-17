@@ -1,91 +1,100 @@
-# AI-ReadSmart-FYP-
-Heriot-Watt (Malaysia) H00456192 FYP
+# AI-ReadSmart Final Year Project (FYP)
 
-## Backend 
-### First Time Setup (Once Only):
-python3 -m venv venv          
-source venv/bin/activate     
-pip install -r requirements.txt  
+Heriot-Watt (Malaysia) H00456192
 
-### Every Time After (Just Activate VE):
-source venv/bin/activate    
+Welcome to the **AI-ReadSmart** repository. This application is designed to ingest news content, provide AI-powered summaries using Google's Gemini, and offer high-fidelity Speech-To-Text (STT) and Text-To-Speech (TTS) conversational experiences. It uses React Native frontend and Python FastAPI backend backed by MongoDB.
 
-### Run the Server (FastAPI)
-- uvicorn application.main:app --reload 
-- uvicorn application.main:app --reload --host 0.0.0.0 --port 8000
-- **Interactive API Docs**: http://127.0.0.1:8000/docs
-## Notice `--host 0.0.0.0` - this makes backend accessible from your phone!
-uvicorn application.main:app --host 0.0.0.0 --port 8000 --reload
+---
 
-## Save package installation
-pip freeze > requirements.txt
+## Backend Structure (FastAPI)
 
-## Frontend
-npm start -- --tunnel
+The backend is located in the `backend/` folder directory, operating asynchronously as RESTful API.
 
-## ONE-TIME SETUP (Already Done)
+- **`application/main.py`**: The central entry point and initialization file for the FastAPI application. Registers all API routers, middleware, and startup events.
+- **`application/database.py`**: Manages the connection lifecycle with the MongoDB database using `pymongo`.
+- **`application/data_models.py`**: Contains Pydantic classes to enforce strict schema validation for all incoming and outgoing API payloads.
+- **`application/auth_routes.py` & `application/authentication.py`**: Handles user authentication, token verification via the Firebase Admin SDK, and session security.
+- **`application/news_routes.py` & `application/news_service.py`**: Fetches dynamic headlines from the NewsAPI and uses `trafilatura` to scrape and parse full article HTML text.
+- **`application/conversation_routes.py` & `application/ai_service.py`**: Interfaces with the Google Gemini Flash API for robust Natural Language Processing, managing the core conversational logic and context summarization.
+- **`application/voice_audio_routes.py`**: Connects to Google Cloud Speech-to-Text and Text-to-Speech APIs to handle bidirectional audio transcription and voice synthesis.
+- **`application/preferences_routes.py`**: Exposes user-preference management (e.g., preferred news topics, selected TTS voice options).
+- **`requirements.txt`**: Records the exact Python dependencies and configurations required to run the local development server.
 
-This was already completed. Only redo if your computer restarts and connection stops working.
+---
 
-### 1. Check WSL IP Address
+## 📱 Frontend Structure (React Native & Expo)
 
-**In WSL terminal:**
-bash
-hostname -I
-Example output: `172.28.160.1`
+The frontend is located in the `frontend/` folder directory, designed for cross-platform (iOS/Android) mobile capabilities.
 
-### 2. Set Up Port Forwarding (Windows PowerShell as Admin)
+- **`src/navigation/AuthNav.js`**: Replaces the default React Navigation behavior with event emitters to broadcast screen transitions. Routes users between the unauthenticated flow and main screens.
+- **`src/backend_services/ folder`**: The communication layer. Houses Axios-based wrapper files (`api.js`, `authservice.js`, and etc...) utilized to interface efficiently with the backend REST endpoints.
+- **`src/screens/authentication/ folder`**: The unauthenticated app cluster. Includes flows to sign up and log in (`SignupScreen.js`, `LoginScreen.js`), initial topic discovery (`TopicSelectionScreen.js`), and profile configuration (`FillProfileScreen.js`).
+- **`src/screens/main/ folder`**: The core operational interface.
+  - `HomeScreen.js`: The central personalized feed.
+  - `ExploreScreen.js`: Interface to discover new topic categories.
+  - `ArticleDetailScreen.js`: Detailed reading and AI-summary view of a specific article.
+  - `ConversationHistoryScreen.js` & `ConversationDetailScreen.js`: The chatbot history interface for saved conversation and to use "Smart Recap" feature.
+- **`src/screens/settings/ folder`**: Controls for profile fine-tuning (`ProfileScreen.js`, `AccountDetailsScreen.js`) and application tuning (`AudioControlScreen.js`).
+- **`src/utils/constants.js`**: Contains fundamental configuration data like application-wide colors, category constants, and the crucial `API_BASE_URL` mapped to the developer's WIFI IPv4 address.
+- **`src/components/BottomNavBar.js`**: A globally used standalone UI capability representing the main bottom navigator mapping tab routes.
+- **`package.json`**: Records essential Expo and React Native libraries, alongside tools like `@react-navigation`, `expo-av`, and `axios`.
 
-**Open PowerShell as Administrator:**
-- Press Windows key
-- Type "PowerShell"
-- Right-click "Windows PowerShell"
-- Click "Run as administrator"
+---
 
-**Run these commands** (replace `172.28.160.1` with your actual WSL IP):
-powershell
-# Add port forwarding rule
-netsh interface portproxy add v4tov4 listenport=8000 listenaddress=0.0.0.0 connectport=8000 connectaddress=172.28.160.1
+## Set-Up Work Flow
 
-# Allow through firewall
-netsh advfirewall firewall add rule name="WSL FastAPI" dir=in action=allow protocol=TCP localport=8000
+Because development spans a Windows host and a WSL (Windows Subsystem for Linux) instance, bridge port-forwarding is frequently required to pass requests from a physical phone testing device through the host into the virtual machine.
 
-## DAILY WORKFLOW
+### One-Time Setup (First Run Only)
 
-Every time you want to test on your iPhone:
+1. **Prepare Python Environment (WSL Terminal):**
 
-### Step 1: Start Backend (WSL Terminal)
-bash
-cd ~/AI-ReadSmart-FYP-/backend
-source venv/bin/activate
-uvicorn application.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+   cd ~/AI-ReadSmart-FYP-/backend
+   python3 -m venv venv          
+   source venv/bin/activate     
+   pip install -r requirements.txt  
+   ```
 
-**Wait for:**
-Server is ready!
-INFO:     Uvicorn running on http://0.0.0.0:8000
+2. **Install Node Modules (Windows or WSL Terminal):**
 
-**Keep this terminal open!**
+   ```
+   cd ~/AI-ReadSmart-FYP-/frontend
+   npm install
+   ```
 
-### Step 2: Verify Backend is Accessible
+### Daily Startup Routine (Every Time)
 
-**On Windows laptop browser, test:**
-- `http://localhost:8000` - Should show JSON
-- `http://192.168.1.4:8000` - Should show JSON
+#### Step 1: Start Backend & Port Forwarding (WSL / Windows PowerShell)
 
-**On iPhone Safari, test:**
-- `http://192.168.1.4:8000` - Should show JSON
+1. Open **Windows PowerShell as Administrator** and execute:
+   ```powershell
+  $wsl_ip = (wsl hostname -I).Trim().Split(' ')[0]
+  >> netsh interface portproxy delete v4tov4 listenport=8000 listenaddress=0.0.0.0
+  >> netsh interface portproxy add v4tov4 listenport=8000 listenaddress=0.0.0.0 connectport=8000 connectaddress=$wsl_ip
+  >> Write-Host "Bridge successfully connected to WSL IP: $wsl_ip" -ForegroundColor Green
+   ```
 
-**Expected response:**
-json
-{
-  "app": "AI-ReadSmart API",
-  "status": "running",
-  "version": "1.0.0"
-}
+2. Launch the Backend Server back in your **WSL Terminal**:
+   ```bash
+   cd ~/AI-ReadSmart-FYP-/backend
+   source venv/bin/activate
+   uvicorn application.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
 
-### Step 3: Start Frontend (New Terminal - Can be WSL or Windows)
+#### Step 2: Verify Network Routing
 
-**Option A: WSL with Tunnel (Recommended)**
-bash
+- **Important Configuration**: Open `frontend/src/utils/constants.js` and modify `API_BASE_URL` to your **Windows Host IPv4 Address** followed by `:8000`.
+- **Window Mode**: Press Win + R, type 'cmd', hit confirm, type 'ipconfig', find "Wireless LAN adapter Wi-Fi" and copy the IPv4 Address.
+- Verify the API is successfully bridging from external clients by hitting the host IP address on your phone's browser (e.g., `http://192.168.1.3:8000`). It should return application status JSON.
+
+#### Step 3: Start Frontend (Expo)
+
+Ensure you keep the backend terminal open, then in a **New Terminal** navigate to the frontend folder:
+
+```
 cd ~/AI-ReadSmart-FYP-/frontend
-npm start -- --tunnel
+npm start -- --tunnel --clear
+```
+
+*(Use the Expo Go app on your physical mobile testing device to scan the generated QR code and test the full application)*

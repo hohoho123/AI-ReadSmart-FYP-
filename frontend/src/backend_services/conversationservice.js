@@ -1,7 +1,7 @@
 import api from './api';
 
 export const conversationService = {
-  // Chat with AI (Phase 7-8)
+  // Send message to AI Chat
   async chat(message, articleId, articleTitle, articleContent, history = []) {
     const response = await api.post('/conversation/chat', {
       message,
@@ -13,7 +13,7 @@ export const conversationService = {
     return { success: true, response: response.data.response };
   },
 
-  // Save conversation (Phase 9)
+  // Save conversation 
   async save(articleId, articleTitle, articleUrl, messages) {
     const response = await api.post('/conversation/save', {
       article_id: articleId,
@@ -24,7 +24,7 @@ export const conversationService = {
     return { success: true, conversationId: response.data.conversation_id };
   },
 
-  // Get saved conversations (Phase 10)
+  // Retrieve conversation history
   async getSaved() {
     const response = await api.get('/conversation/saved');
     return { conversations: response.data.conversations, count: response.data.count };
@@ -36,13 +36,13 @@ export const conversationService = {
     return response.data.conversation;
   },
 
-  // Delete conversation (Phase 11)
+  // Remove conversation
   async delete(conversationId) {
     await api.delete(`/conversation/${conversationId}`);
     return { success: true };
   },
 
-  // Smart Recap (Phase 12)
+  // Generate Contextual Smart Recap
   async smartRecap(conversationId, message, newArticleText = null, originalArticleText = null, latestArticleUrl = null) {
     const response = await api.post(`/conversation/${conversationId}/followup`, {
       message,

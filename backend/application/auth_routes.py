@@ -1,12 +1,7 @@
 from fastapi import APIRouter, HTTPException, Header
 from datetime import datetime
 from application.data_models import UserCreate, UserLogin
-from application.database import (
-    users_collection,
-    get_user_by_email,
-    create_user,
-    preferences_collection
-)
+from application.database import users_collection, get_user_by_email, create_user, preferences_collection
 from application.authentication import create_firebase_user, get_user_by_email as get_firebase_user, verify_token
 
 # Create router
@@ -18,12 +13,12 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/signup")
 async def signup(user_data: UserCreate):
     try:
-        # 1. Check if user already exists
+        # Verify user existence
         existing_user = get_user_by_email(user_data.email)
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # 2. Create user in Firebase (Firebase requires 'display_name')
+        # Register user in Firebase Auth
         firebase_user = create_firebase_user(
             email=user_data.email,
             password=user_data.password,
@@ -35,7 +30,7 @@ async def signup(user_data: UserCreate):
         
         actual_uid = firebase_user.uid
         
-        # 3. Create user in MongoDB
+        # Persist user profile to MongoDB
         new_user = {
             "user_id": actual_uid,
             "email": user_data.email,
@@ -48,7 +43,7 @@ async def signup(user_data: UserCreate):
         }
         create_user(new_user)
         
-        # 4. Immediately create their preferences in MongoDB
+        # Immediately create their preferences in MongoDB
         new_prefs = {
             "user_id": actual_uid,
             "followed_topics": user_data.followed_topics,

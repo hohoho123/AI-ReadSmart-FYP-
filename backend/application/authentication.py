@@ -29,7 +29,7 @@ def verify_token(token):
         print(f"Token verification failed: {e}")
         return None
     
-    # --- NEW FASTAPI DEPENDENCY (For your protected routes like /news/feed) ---
+# FastAPI Dependency: Get Current User
 async def get_current_user(request: Request):
     """
     Extracts token from Authorization header and verifies it.

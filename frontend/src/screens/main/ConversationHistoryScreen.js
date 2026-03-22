@@ -1,23 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  StatusBar,
-  Platform,
-  Animated,
-  PanResponder,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar, Platform, Animated, PanResponder, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { conversationService } from '../../backend_services';
 import BottomNavBar from '../../components/BottomNavBar';
 
-// ── helpers ────────────────────────────────────────────────────────────────
+// ===================================
+// helpers
+// ===================================
 const formatGroupLabel = (dateStr) => {
   const d    = new Date(dateStr);
   const now  = new Date();
@@ -35,11 +25,13 @@ const groupByDate = (conversations) => {
     if (!groups[label]) groups[label] = [];
     groups[label].push(c);
   });
-  // Convert to array of { label, data }
+  // Convert to array format
   return Object.entries(groups).map(([label, data]) => ({ label, data }));
 };
 
-// ── screen ─────────────────────────────────────────────────────────────────
+// ===================================
+// screen
+// ===================================
 export default function ConversationHistoryScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [groups, setGroups]     = useState([]);
@@ -64,11 +56,13 @@ export default function ConversationHistoryScreen({ navigation }) {
     loadConversations();
   }, []);
 
-  // ── delete handler ─────────────────────────────────────────────────────
+// ===================================
+// delete handler
+// ===================================
   const handleDelete = async (conversationId) => {
     try {
       await conversationService.delete(conversationId);
-      // Remove from local state
+      // Update local state
       setGroups((prev) =>
         prev
           .map((g) => ({
@@ -83,7 +77,9 @@ export default function ConversationHistoryScreen({ navigation }) {
     }
   };
 
-  // ── swipeable card ────────────────────────────────────────────────────
+// ===================================
+// swipeable card
+// ===================================
   const SwipeableCard = ({ item }) => {
     const translateX = useRef(new Animated.Value(0)).current;
     const isOpen = useRef(false);

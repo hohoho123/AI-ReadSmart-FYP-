@@ -98,13 +98,13 @@ class SavedArticle(BaseModel):
 # ===========================
 
 class ChatMessage(BaseModel):
-    """Single message in a conversation (like ChatGPT)"""
+    """Single message in a conversation"""
     role: str  # "user" or "assistant"
     content: str
     timestamp: Optional[str] = None
 
 class ChatRequest(BaseModel):
-    """Request to send a chat message to AI"""
+    """Schema for chat interactions"""
     article_id: str
     article_title: str
     article_content: Optional[str] = None
@@ -112,7 +112,7 @@ class ChatRequest(BaseModel):
     conversation_history: List[ChatMessage] = []
 
 class SaveConversationRequest(BaseModel):
-    """Request to bookmark/save a conversation"""
+    """Payload for saving conversation history"""
     article_id: str
     article_title: str
     article_url: str

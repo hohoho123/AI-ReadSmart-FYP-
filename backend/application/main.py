@@ -11,14 +11,18 @@ from application.conversation_routes import router as conversation_router
 from application.ai_service import load_ai_model, summarize_article
 from application.voice_audio_routes import router as voice_router
 
-#Create FastAPI app instance
+# =========================================================
+# APP CONFIGURATION
+# =========================================================
+
+# Initialize FastAPI application
 app = FastAPI(
     title="AI-ReadSmart API",
     description="Backend for AI-ReadSmart mobile application",
     version="1.0.0"
 )
 
-#Enable CORS (so your frontend can talk to backend)
+# CORS Middleware Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 

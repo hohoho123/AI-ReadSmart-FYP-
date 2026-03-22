@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
-import { getAuth } from 'firebase/auth'; // Import directly from Firebase to break the loop
+// Import directly from Firebase to avoid circular dependency
+import { getAuth } from 'firebase/auth'; 
 
 const api = axios.create({
   baseURL: API_BASE_URL,

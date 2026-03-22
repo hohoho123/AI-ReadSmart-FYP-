@@ -1,5 +1,5 @@
 // API Base URL - change to your computer's IP
-export const API_BASE_URL = 'http://192.168.1.3:8000';
+export const API_BASE_URL = 'http://192.168.1.4:8000';
 
 // Topics for profile setup and Explore screen
 // These labels are passed directly to NewsAPI as search queries

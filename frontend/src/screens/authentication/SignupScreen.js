@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, StyleSheet, 
-  SafeAreaView, KeyboardAvoidingView, Platform 
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const PASSWORD_RULES = [
@@ -33,8 +30,8 @@ export default function SignupScreen({ navigation }) {
     }
     setError('');
     
-    // We do NOT call authService here.
-    // We pass the data to the next screen using navigation parameters.
+    // Auth service is not called here
+    // Data is passed to the next screen via navigation parameters
     navigation.navigate('TopicSelection', { 
       signupData: { email, password, displayName } 
     });

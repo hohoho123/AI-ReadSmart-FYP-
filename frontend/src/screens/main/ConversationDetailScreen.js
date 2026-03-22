@@ -1,21 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Animated,
-  PanResponder,
-  Dimensions,
-  ActivityIndicator,
-  StatusBar,
-  Platform,
-  Keyboard,
-  Linking,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, Animated, PanResponder, Dimensions, ActivityIndicator, StatusBar, Platform, Keyboard, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
@@ -28,11 +12,15 @@ const DRAWER_PEEK   = 65;
 const DRAWER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.45);
 const DRAG_RANGE    = DRAWER_HEIGHT - DRAWER_PEEK;
 
+// ===================================
 // Strip markdown for TTS
+// ===================================
 const stripMarkdownForTTS = (text) =>
   text.replace(/^[*\-#]+\s*/gm, '').replace(/[*_`#]/g, '').trim();
 
+// ===================================
 // Render bullet-point-aware content
+// ===================================
 const renderBubbleContent = (content, textStyle) => {
   const lines = content.split('\n').filter(l => l.trim() !== '');
   return lines.map((line, i) => {
@@ -65,13 +53,17 @@ export default function ConversationDetailScreen({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const { conversationId, articleTitle } = route.params || {};
 
-  // ── Conversation state ─────────────────────────────────────────────
+// ===================================
+// Conversation state
+// ===================================
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages]         = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
 
-  // ── Drawer / input state ───────────────────────────────────────────
+// ===================================
+// Drawer / input state
+// ===================================
   const [isExpanded, setIsExpanded]         = useState(false);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
   const [inputText, setInputText]           = useState('');
@@ -86,7 +78,9 @@ export default function ConversationDetailScreen({ navigation, route }) {
   const inputRef      = useRef(null);
   const waveAnims     = useRef([...Array(5)].map(() => new Animated.Value(0.3))).current;
 
-  // ── Keyboard height ────────────────────────────────────────────────
+// ===================================
+// Keyboard height 
+// ===================================
   const [kbHeight, setKbHeight] = useState(0);
   useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -96,7 +90,7 @@ export default function ConversationDetailScreen({ navigation, route }) {
     return () => { s.remove(); h.remove(); };
   }, []);
 
-  // Auto-scroll when messages change
+  // Auto-scroll on new message
   useEffect(() => {
     if (messages.length > 0) {
       setTimeout(() => chatScrollRef.current?.scrollToEnd({ animated: true }), 100);

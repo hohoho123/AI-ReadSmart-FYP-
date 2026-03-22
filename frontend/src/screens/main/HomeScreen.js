@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  View, Text, StyleSheet, SafeAreaView, FlatList, Image, 
-  TouchableOpacity, ActivityIndicator, RefreshControl 
-} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import api from '../../backend_services/api';
 
-// I am importing the reusable nav bar
+// UI Components
 import BottomNavBar from '../../components/BottomNavBar'; 
 
 export default function HomeScreen({ navigation }) {
@@ -53,14 +50,14 @@ export default function HomeScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-  // I am adding this listener: it waits for the page number to increase, then triggers the fetch
+  // Listener for page number changes
   useEffect(() => {
     if (breakingPage > 1) {
       fetchBreakingNews(breakingPage);
     }
   }, [breakingPage]);
 
-  // I am listening for tab or page changes to fetch recommendations
+  // Listener for tab or page changes
   useEffect(() => {
     if (!hasMounted.current) return;
     fetchRecommendations(recPage);
@@ -68,7 +65,7 @@ export default function HomeScreen({ navigation }) {
 
   // --- CORE LOGIC ---
 
-  // I am formatting the timestamp so it looks clean (e.g., "2 hr ago")
+  // Format timestamp
   const formatTimeAgo = (dateString) => {
     if (!dateString) return 'Just now';
     const diffMins = Math.round((new Date() - new Date(dateString)) / 60000);
@@ -78,7 +75,7 @@ export default function HomeScreen({ navigation }) {
     return `${Math.floor(diffHrs / 24)} days ago`;
   };
 
-  // I am fetching the Breaking News. Page 1 overwrites, Page > 1 appends smoothly.
+  // Fetch Breaking News
   const fetchBreakingNews = async (pageNumber) => {
     if (!breakingHasMore && pageNumber !== 1) return;
     
@@ -91,7 +88,7 @@ export default function HomeScreen({ navigation }) {
       
       const response = await api.get('/news/feed', { params: { page: pageNumber } });
       
-      // Extract topics to build the dynamic tab bar (only needed on first load)
+      // Extract topics for dynamic tab bar on first load
       if (response.data.user_topics && pageNumber === 1) {
         setUserTopics(['All', ...response.data.user_topics]);
       }

@@ -20,12 +20,14 @@ def get_authenticated_user(authorization: str):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
+    # Extract token from header
     token = authorization.split("Bearer ")[1]
     decoded = verify_token(token)
     
     if not decoded:
         raise HTTPException(status_code=401, detail="Invalid token")
     
+    # Find user in database
     user = users_collection.find_one({"firebase_uid": decoded["uid"]})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -34,7 +36,7 @@ def get_authenticated_user(authorization: str):
 
 
 # ===========================
-# ENDPOINT 1: Chat with AI
+# AI CHAT ENDPOINT
 # ===========================
 @router.post("/chat")
 async def ai_chat(
@@ -85,7 +87,7 @@ async def ai_chat(
 
 
 # ===========================
-# ENDPOINT 2: Save/Bookmark Conversation
+# SAVE CONVERSATION ENDPOINT
 # ===========================
 @router.post("/save")
 async def save_conversation(
@@ -139,7 +141,7 @@ async def save_conversation(
 
 
 # ===========================
-# ENDPOINT 3: Get All Saved Conversations
+# Get All Saved Conversations
 # ===========================
 @router.get("/saved")
 async def get_saved_conversations(authorization: str = Header(None)):
@@ -191,7 +193,7 @@ async def get_saved_conversations(authorization: str = Header(None)):
 
 
 # ===========================
-# ENDPOINT 4: Get Single Conversation (Full)
+# Get Single Conversation (Full)
 # ===========================
 @router.get("/{conversation_id}")
 async def get_conversation(
@@ -239,7 +241,7 @@ async def get_conversation(
 
 
 # ===========================
-# ENDPOINT 5: Delete Conversation
+# Delete Conversation
 # ===========================
 @router.delete("/{conversation_id}")
 async def delete_conversation(
@@ -274,7 +276,7 @@ async def delete_conversation(
 
 
 # ===========================
-# ENDPOINT 6: Followup / Smart Recap
+# Followup / Smart Recap
 # ===========================
 @router.post("/{conversation_id}/followup")
 async def conversation_followup(

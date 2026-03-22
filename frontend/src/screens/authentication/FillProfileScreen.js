@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, StyleSheet, 
-  SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator 
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../backend_services';
 
 export default function FillProfileScreen({ navigation, route }) {
-  // 1. Catch ALL the data from the previous screens
+  // Retrieve data passed from previous screens
   const { signupData } = route.params || {};
 
-  // Pre-fill fields from the first screen to match your mockup design
+  // Pre-fill fields using data from initial signup step
   const [username, setUsername] = useState(signupData?.displayName || '');
   const [email, setEmail] = useState(signupData?.email || '');
   const [fullName, setFullName] = useState('');
@@ -29,8 +26,8 @@ export default function FillProfileScreen({ navigation, route }) {
     setError('');
 
     try {
-      // 2. THE UNIFIED API CALL
-      // We send all accumulated data to the backend at once!
+      // Unified API Call
+      // Send accumulated data to backend
       const response = await authService.signup(
         email, 
         signupData.password, 
@@ -42,9 +39,8 @@ export default function FillProfileScreen({ navigation, route }) {
       );
       
       if (response.success) {
+        // Redirect to login on success
         console.log("Account completely setup! No ghost users.");
-        // Success! For now, we will route back to login so you can test logging in.
-        // Later, this will route straight to your Home feed.
         navigation.navigate('Login');
       }
     } catch (err) {

@@ -2,7 +2,7 @@ import api from './api';
 import { storage } from '../utils/storage';
 
 export const preferencesService = {
-  // Profile setup (Phase 4)
+  // Initialize user profile preferences
   async setupProfile(followedTopics, ttsVoice) {
     const response = await api.post('/preferences/setup', {
       followed_topics: followedTopics,

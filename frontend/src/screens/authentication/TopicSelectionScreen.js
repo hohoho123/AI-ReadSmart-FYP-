@@ -44,7 +44,9 @@ export default function TopicSelectionScreen({ navigation, route }) {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* ========================================================= */}
         {/* Topics Section */}
+        {/* ========================================================= */}
         <Text style={styles.sectionLabel}>Choose your Topics</Text>
         <View style={styles.pillContainer}>
           {TOPIC_OPTIONS.map((topic) => {
@@ -61,7 +63,9 @@ export default function TopicSelectionScreen({ navigation, route }) {
           })}
         </View>
 
+        {/* ========================================================= */}
         {/* Voice Section */}
+        {/* ========================================================= */}
         <Text style={styles.sectionLabel}>Select Audio Voice</Text>
         <View style={styles.pillContainer}>
           {VOICES.map((voice) => {
@@ -78,7 +82,7 @@ export default function TopicSelectionScreen({ navigation, route }) {
           })}
         </View>
         
-        {/* Extra padding at bottom for scrolling */}
+        {/* Bottom padding for scroll */}
         <View style={{ height: 40 }} />
       </ScrollView>
 

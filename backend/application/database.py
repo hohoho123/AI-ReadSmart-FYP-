@@ -23,7 +23,9 @@ except Exception as e:
 # Get database
 db = client["ai_readsmart_db"]
 
-# Collections (tables)
+# ===========================
+# DATABASE COLLECTIONS
+# ===========================
 users_collection = db["users"]
 conversations_collection = db["conversations"]
 articles_collection = db["articles"]
@@ -44,7 +46,7 @@ def create_indexes():
         # Conversations - index by user and date
         conversations_collection.create_index("user_id")
         conversations_collection.create_index("conversation_id", unique=True)
-        # TTL index: MongoDB automatically deletes documents when expires_at is reached
+        # Automatic document expiry based on timestamp
         conversations_collection.create_index("expires_at", expireAfterSeconds=0)
         
         # Preferences - one per user

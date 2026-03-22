@@ -9,10 +9,14 @@ from datetime import datetime, timedelta
 
 load_dotenv()
 
+# =========================================================
+# NEWS FETCHING SERVICE
+# =========================================================
+
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 NEWS_API_BASE_URL = "https://newsapi.org/v2"
 
-# By setting page_size=1, Page 1 gets the 1st article, Page 2 gets the 2nd, completely preventing duplicates!
+# Fetch articles one by one to prevent duplicates across pages
 async def get_news_by_topics(topics: list, page: int = 1) -> list:
     articles = []
     async with httpx.AsyncClient() as client:
@@ -27,7 +31,7 @@ async def get_news_by_topics(topics: list, page: int = 1) -> list:
                 print(f"Error fetching {topic}: {e}")
     return articles
 
-# I am adding this dedicated function for the Recommendations infinite scroll (5 at a time)
+# Fetch paginated news for infinite scroll implementation
 async def get_paginated_news(topic: Optional[str] = None, page: int = 1, page_size: int = 5):
     async with httpx.AsyncClient() as client:
         url = f"{NEWS_API_BASE_URL}/top-headlines?language=en&page={page}&pageSize={page_size}&apiKey={NEWS_API_KEY}"

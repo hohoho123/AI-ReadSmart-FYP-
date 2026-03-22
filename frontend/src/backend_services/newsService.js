@@ -1,7 +1,7 @@
 import api from './api';
 
 export const newsService = {
-  // Personalized feed (Phase 5-6)
+  // Fetch personalized news feed
   async getFeed(page = 1) {
     const response = await api.get('/news/feed', { params: { page } });
     return { articles: response.data.articles, count: response.data.count };

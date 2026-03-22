@@ -43,7 +43,7 @@ def _load_prompt(filename: str) -> str:
             return f.read()
     except Exception as e:
         print(f"Error loading prompt '{filename}': {e}")
-        return "You are a helpful assistant."
+        return "Prompt loading failed. Please check the server logs for details."
 
 
 # =========================================================

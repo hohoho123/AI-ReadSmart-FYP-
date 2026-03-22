@@ -1,23 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TOPIC_OPTIONS } from '../../utils/constants';
 import { preferencesService } from '../../backend_services';
 import BottomNavBar from '../../components/BottomNavBar';
 
-// ─────────────────────────────────────────────
+// =========================================================
 // SINGLE TOPIC ROW COMPONENT
-// ─────────────────────────────────────────────
+// =========================================================
 const TopicRow = ({ topic, isFollowing, onToggle, isLoading }) => (
   <View style={styles.topicRow}>
     <Image source={{ uri: topic.image }} style={styles.topicImage} />
@@ -46,15 +36,17 @@ const TopicRow = ({ topic, isFollowing, onToggle, isLoading }) => (
   </View>
 );
 
-// ─────────────────────────────────────────────
+// =========================================================
 // MAIN EXPLORE SCREEN
-// ─────────────────────────────────────────────
+// =========================================================
 export default function ExploreScreen({ navigation }) {
   const [followedTopics, setFollowedTopics] = useState([]);  // labels from backend
   const [pageLoading, setPageLoading]       = useState(true);  // initial fetch
   const [loadingTopic, setLoadingTopic]     = useState(null);  // per-row spinner
 
-  // ─── Load current preferences on mount ──────────────────────────────────
+// =========================================================
+// Load current preferences on mount
+// =========================================================
   useEffect(() => {
     loadPreferences();
   }, []);
@@ -74,7 +66,9 @@ export default function ExploreScreen({ navigation }) {
     }
   };
 
-  // ─── Follow / Unfollow toggle ────────────────────────────────────────────
+// =========================================================
+// Follow / Unfollow toggle
+// =========================================================
   const handleToggle = useCallback(
     async (topic) => {
       const isCurrentlyFollowing = followedTopics.includes(topic.label);
@@ -82,21 +76,21 @@ export default function ExploreScreen({ navigation }) {
 
       try {
         if (isCurrentlyFollowing) {
-          // Optimistic UI update
+          // Optimistic update
           setFollowedTopics((prev) => prev.filter((t) => t !== topic.label));
           await preferencesService.removeTopic(topic.label);
         } else {
-          // Optimistic UI update
+          // Optimistic update
           setFollowedTopics((prev) => [...prev, topic.label]);
           await preferencesService.addTopic(topic.label);
         }
       } catch (err) {
-        // Rollback on failure
+        // Revert on failure
         console.log('Toggle topic error:', err);
         setFollowedTopics((prev) =>
           isCurrentlyFollowing
-            ? [...prev, topic.label]        // re-add on unfollow failure
-            : prev.filter((t) => t !== topic.label) // remove on follow failure
+            ? [...prev, topic.label]        // Restore on failure
+            : prev.filter((t) => t !== topic.label) // Restore on failure
         );
         Alert.alert('Error', `Could not update "${topic.label}". Please check your connection.`);
       } finally {
@@ -107,7 +101,7 @@ export default function ExploreScreen({ navigation }) {
   );
 
 
-  // ─── Render ──────────────────────────────────────────────────────────────
+  // ==========================Render item for FlatList==========================
   const renderItem = ({ item }) => (
     <TopicRow
       topic={item}
@@ -119,21 +113,29 @@ export default function ExploreScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ── HEADER ───────────────────────────────────────────────── */}
+      {/* ========================================================= */}
+      {/* HEADER */}
+      {/* ========================================================= */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Explore</Text>
       </View>
 
-      {/* ── BLUE UNDERLINE ───────────────────────────────────────── */}
+      {/* ========================================================= */}
+      {/* BLUE UNDERLINE */}
+      {/* ========================================================= */}
       <View style={styles.headerUnderline} />
 
 
-      {/* ── SECTION LABEL ────────────────────────────────────────── */}
+      {/* ========================================================= */}
+      {/* SECTION LABEL */}
+      {/* ========================================================= */}
       <View style={styles.sectionLabelRow}>
         <Text style={styles.sectionLabel}>Topics</Text>
       </View>
 
-      {/* ── CONTENT ──────────────────────────────────────────────── */}
+      {/* ========================================================= */}
+      {/* CONTENT */}
+      {/* ========================================================= */}
       {pageLoading ? (
         <ActivityIndicator size="large" color="#FF3B30" style={styles.centeredLoader} />
       ) : (
@@ -152,9 +154,9 @@ export default function ExploreScreen({ navigation }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// =========================================================
 // STYLES
-// ─────────────────────────────────────────────
+// =========================================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,

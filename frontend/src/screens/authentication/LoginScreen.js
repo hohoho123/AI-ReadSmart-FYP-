@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, StyleSheet, 
-  SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator 
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../backend_services';
 
@@ -28,8 +25,8 @@ export default function LoginScreen({ navigation }) {
       if (response.success) {
         console.log('Login successful:', response.user);
         
-        // Since we use Unified Signup, all logged-in users have full profiles.
-        // Route directly to Home!
+        // Unified Signup ensures all users have full profiles
+        // Navigate to Home
         navigation.replace('Home');
       }
     } catch (err) {

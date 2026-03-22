@@ -5,7 +5,7 @@ let soundObject = null;
 let currentVolume = 1.0;   // 0.0 – 1.0, persists across TTS calls
 
 export const voiceService = {
-  // Text to Speech (Phase 14)
+  // Convert text to speech audio
   async textToSpeech(text, voiceId = null) {
     const payload = { text };
     if (voiceId) payload.voice_id = voiceId;

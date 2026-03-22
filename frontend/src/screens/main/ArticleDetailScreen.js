@@ -1,23 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  FlatList,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Animated,
-  PanResponder,
-  Dimensions,
-  Linking,
-  StatusBar,
-  Platform,
-  ActivityIndicator,
-  Keyboard,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, Image, TextInput, TouchableOpacity, Animated, PanResponder, Dimensions, Linking, StatusBar, Platform, ActivityIndicator, Keyboard, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
@@ -27,15 +9,15 @@ import { newsService, conversationService, voiceService } from '../../backend_se
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// How much of the drawer peeks above the bottom when collapsed
+// Drawer peek height
 const DRAWER_PEEK   = 65;
 const DRAWER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.65);
 // Distance the drawer travels between collapsed ↔ expanded
 const DRAG_RANGE    = DRAWER_HEIGHT - DRAWER_PEEK;
 
-// ─────────────────────────────────────────────────────────────────────────
+// =========================================================
 // HELPERS
-// ─────────────────────────────────────────────────────────────────────────
+// =========================================================
 const getGreeting = () => {
   const h = new Date().getHours();
   if (h < 12) return 'Good Morning';
@@ -47,14 +29,14 @@ const getGreeting = () => {
 const cleanContent = (raw) =>
   raw ? raw.replace(/\s*\[\+\d+ chars\]$/, '').trim() : '';
 
-// Strip markdown symbols so TTS doesn't read "asterisk", "hash" etc.
+// Remove markdown symbols for TTS
 const stripMarkdownForTTS = (text) =>
   text
     .replace(/^[*\-#]+\s*/gm, '')   // remove leading * - # from lines
     .replace(/[*_`#]/g, '')           // remove inline markdown symbols
     .trim();
 
-// Render AI bubble content: bullet lines become • with spacing, rest is plain text
+// Render AI bubble content with bullet formatting
 const renderBubbleContent = (content, textStyle) => {
   const lines = content.split('\n').filter(l => l.trim() !== '');
   return lines.map((line, i) => {
@@ -71,9 +53,9 @@ const renderBubbleContent = (content, textStyle) => {
   });
 };
 
-// ─────────────────────────────────────────────────────────────────────────
+// =========================================================
 // ARTICLE DETAIL SCREEN
-// ─────────────────────────────────────────────────────────────────────────
+// =========================================================
 export default function ArticleDetailScreen({ navigation, route }) {
   const article  = route.params?.article || {};
   const insets   = useSafeAreaInsets();
@@ -84,8 +66,10 @@ export default function ArticleDetailScreen({ navigation, route }) {
   const [scrapeLoading, setScrapeLoading] = useState(true);
   const [scrapeError, setScrapeError]  = useState('');
 
-  // ── Chat drawer state ────────────────────────────────────────────────
-  // chatMode: 'idle' | 'recording' | 'thinking' | 'speaking' | 'chat'
+// =========================================================
+// Chat drawer state
+// =========================================================
+// chatMode: 'idle' | 'recording' | 'thinking' | 'speaking' | 'chat'
   const [chatMode, setChatMode]        = useState('idle');
   const [messages, setMessages]        = useState([]);  // { id, role, content, timestamp }
   const [inputText, setInputText]      = useState('');
@@ -94,7 +78,7 @@ export default function ArticleDetailScreen({ navigation, route }) {
   const [saveToast, setSaveToast]      = useState(false);
   const recordingRef  = useRef(null);
   const chatScrollRef = useRef(null);
-  // 5 animated bars for the waveform
+  // Animated bars for waveform
   const waveAnims = useRef([...Array(5)].map(() => new Animated.Value(0.3))).current;
   // Keyboard height — used to push the footer up above the keyboard
   const [kbHeight, setKbHeight] = useState(0);
@@ -113,7 +97,7 @@ export default function ArticleDetailScreen({ navigation, route }) {
     });
   }, []);
 
-  // Stop audio when navigating away from this screen
+  // Stop audio on unmount
   useEffect(() => {
     return () => { voiceService.stopAudio(); };
   }, []);
